@@ -1,5 +1,7 @@
 'use strict';
 
+require('dotenv').config();
+
 // ############################################# //
 // ##### Server Setup for Users Management API ##### //
 // ############################################# //
@@ -19,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB connection string
-mongoose.connect('mongodb+srv://tempuser:12345@cluster0.gwkw6lp.mongodb.net/UserList', {
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
