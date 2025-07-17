@@ -1,0 +1,7 @@
+git ignore
+login to git
+connect github from terminal vscode
+render.com sing in through github
+    create new webservice
+    build command  - npm i
+    name node api
