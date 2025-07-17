@@ -123,25 +123,29 @@ router.route("/:id")
     });
 
 // Route to add a new user
-router.route("/add")
-    .post((req, res) => {
-        const { id, email, username } = req.body;
-        
-        // Check if the id is a valid number
-        if (isNaN(id)) {
-            return res.status(400).json({ error: "id must be a valid number" });
+router.route("/add").post(async (req, res) => {
+    const { id, email, username } = req.body;
+
+    if (isNaN(id)) {
+        return res.status(400).json({ error: "id must be a valid number" });
+    }
+
+    try {
+        // Check if ID already exists
+        const existingUser = await Users.findOne({ id });
+
+        if (existingUser) {
+            return res.status(409).json({ error: "A user with this ID already exists" });
         }
 
-        const newUser = new Users({
-            id,
-            email,
-            username
-        });
+        const newUser = new Users({ id, email, username });
+        await newUser.save();
 
-        newUser.save()
-            .then(() => res.json("User added!"))
-            .catch((err) => res.status(400).json({ error: "Error: " + err.message }));
-    });
+        res.json("User added!");
+    } catch (err) {
+        res.status(500).json({ error: "Server error: " + err.message });
+    }
+});
 
 // Route to update an existing user
 router.route("/update/:id")
