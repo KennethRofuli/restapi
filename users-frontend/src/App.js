@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_URL = "https://restapi-c8rx.onrender.com/api/users"; // Change to your deployed URL if needed
+const API_URL = "https://kenrofuli-testapi.onrender.com/api/users"; // Change to your deployed URL if needed
 
 function App() {
   const [form, setForm] = useState({ id: "", email: "", username: "" });
@@ -13,54 +13,59 @@ function App() {
   }, []);
 
   const fetchUsers = async () => {
-  try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
-    setUsers(data);
-  } catch {
-    setUsers([]);
-  }
-};
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setMessage("");
-  try {
-    const res = await fetch(`${API_URL}/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
-      setMessage("User added successfully!");
-      setForm({ id: "", email: "", username: "" });
-      fetchUsers();
-    } else {
-      const err = await res.json();
-      setMessage("Error: " + (err.error || "Unknown error"));
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      setUsers(data);
+    } catch {
+      setUsers([]);
     }
-  } catch (err) {
-    setMessage("Network error");
-  }
-};
+  };
 
-const handleDelete = async (id) => {
-  setMessage("");
-  try {
-    const res = await fetch(`${API_URL}/delete/${id}`, {
-      method: "DELETE",
-    });
-    if (res.ok) {
-      setMessage("User deleted!");
-      fetchUsers();
-    } else {
-      const err = await res.json();
-      setMessage("Error: " + (err.error || "Unknown error"));
+  // Fix: Add handleChange function
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    try {
+      const res = await fetch(`${API_URL}/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        setMessage("User added successfully!");
+        setForm({ id: "", email: "", username: "" });
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        setMessage("Error: " + (err.error || "Unknown error"));
+      }
+    } catch (err) {
+      setMessage("Network error");
     }
-  } catch (err) {
-    setMessage("Network error");
-  }
-};
+  };
+
+  const handleDelete = async (id) => {
+    setMessage("");
+    try {
+      const res = await fetch(`${API_URL}/delete/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setMessage("User deleted!");
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        setMessage("Error: " + (err.error || "Unknown error"));
+      }
+    } catch (err) {
+      setMessage("Network error");
+    }
+  };
 
   return (
     <div style={{ maxWidth: 400, margin: "2rem auto", padding: 20, border: "1px solid #ccc" }}>
@@ -99,5 +104,3 @@ const handleDelete = async (id) => {
     </div>
   );
 }
-
-export default App;
