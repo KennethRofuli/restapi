@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_URL = "https://restapi-c8rx.onrender.com/api/users"; // Change to your deployed URL if needed
+const API_URL = "https://kenrofuli-testapi.onrender.com/api/users"; // Change to your deployed URL if needed
 
 function App() {
   const [form, setForm] = useState({ id: "", email: "", username: "" });
