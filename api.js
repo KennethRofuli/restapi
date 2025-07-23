@@ -64,7 +64,7 @@ router.route("/")
         Users.find()
             .then((users) => res.json(users))
             .catch((err) => res.status(400).json({ error: "Error: " + err.message }));
-    });
+    })
 
 // Route to get a random user
 router.route("/random")

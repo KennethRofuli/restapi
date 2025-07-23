@@ -14,7 +14,7 @@ function App() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(API_BASE);
       const data = await res.json();
       setUsers(data);
     } catch {
@@ -22,15 +22,11 @@ function App() {
     }
   };
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch(`${API_BASE}/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -51,7 +47,7 @@ function App() {
   const handleDelete = async (id) => {
     setMessage("");
     try {
-      const res = await fetch(`${API_URL}/delete/${id}`, {
+      const res = await fetch(`${API_BASE}/delete/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
