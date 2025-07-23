@@ -13,54 +13,54 @@ function App() {
   }, []);
 
   const fetchUsers = async () => {
-    try {
-      const res = await fetch(API_BASE);
-      const data = await res.json();
-      setUsers(data);
-    } catch {
-      setUsers([]);
-    }
-  };
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    setUsers(data);
+  } catch {
+    setUsers([]);
+  }
+};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage("");
-    try {
-      const res = await fetch(`${API_BASE}/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (res.ok) {
-        setMessage("User added successfully!");
-        setForm({ id: "", email: "", username: "" });
-        fetchUsers();
-      } else {
-        const err = await res.json();
-        setMessage("Error: " + (err.error || "Unknown error"));
-      }
-    } catch (err) {
-      setMessage("Network error");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setMessage("");
+  try {
+    const res = await fetch(`${API_URL}/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    if (res.ok) {
+      setMessage("User added successfully!");
+      setForm({ id: "", email: "", username: "" });
+      fetchUsers();
+    } else {
+      const err = await res.json();
+      setMessage("Error: " + (err.error || "Unknown error"));
     }
-  };
+  } catch (err) {
+    setMessage("Network error");
+  }
+};
 
-  const handleDelete = async (id) => {
-    setMessage("");
-    try {
-      const res = await fetch(`${API_BASE}/delete/${id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setMessage("User deleted!");
-        fetchUsers();
-      } else {
-        const err = await res.json();
-        setMessage("Error: " + (err.error || "Unknown error"));
-      }
-    } catch (err) {
-      setMessage("Network error");
+const handleDelete = async (id) => {
+  setMessage("");
+  try {
+    const res = await fetch(`${API_URL}/delete/${id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      setMessage("User deleted!");
+      fetchUsers();
+    } else {
+      const err = await res.json();
+      setMessage("Error: " + (err.error || "Unknown error"));
     }
-  };
+  } catch (err) {
+    setMessage("Network error");
+  }
+};
 
   return (
     <div style={{ maxWidth: 400, margin: "2rem auto", padding: 20, border: "1px solid #ccc" }}>
