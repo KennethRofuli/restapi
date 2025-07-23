@@ -26,24 +26,25 @@ const handleSubmit = async (e) => {
   e.preventDefault();
   setMessage("");
   try {
-    const res = await fetch(`${API_URL}/add`, {
+    const res = await fetch("https://kenrofuli-testapi.onrender.com/api/users/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
+    const result = await res.text();
+    console.log("Response:", result);
     if (res.ok) {
       setMessage("User added successfully!");
       setForm({ id: "", email: "", username: "" });
       fetchUsers();
     } else {
-      const err = await res.json();
-      setMessage("Error: " + (err.error || "Unknown error"));
+      setMessage("Error: " + result);
     }
   } catch (err) {
     setMessage("Network error");
+    console.error(err);
   }
 };
-
 const handleDelete = async (id) => {
   setMessage("");
   try {
