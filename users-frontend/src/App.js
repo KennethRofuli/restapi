@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_URL = "https://kenrofuli-testapi.onrender.com/api/users"; // Change to your deployed URL if needed
+const API_URL = "https://restapi-c8rx.onrender.com/api/users"; // Change to your deployed URL if needed
 
 function App() {
   const [form, setForm] = useState({ id: "", email: "", username: "" });
@@ -26,23 +26,21 @@ const handleSubmit = async (e) => {
   e.preventDefault();
   setMessage("");
   try {
-    const res = await fetch("https://kenrofuli-testapi.onrender.com/api/users/add", {
+    const res = await fetch(`${API_URL}/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
-    const result = await res.text();
-    console.log("Response:", result);
     if (res.ok) {
       setMessage("User added successfully!");
       setForm({ id: "", email: "", username: "" });
       fetchUsers();
     } else {
-      setMessage("Error: " + result);
+      const err = await res.json();
+      setMessage("Error: " + (err.error || "Unknown error"));
     }
   } catch (err) {
     setMessage("Network error");
-    console.error(err);
   }
 };
 
