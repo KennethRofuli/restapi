@@ -45,6 +45,7 @@ const handleSubmit = async (e) => {
     console.error(err);
   }
 };
+
 const handleDelete = async (id) => {
   setMessage("");
   try {
