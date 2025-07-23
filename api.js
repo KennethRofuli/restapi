@@ -11,6 +11,11 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+// Enable CORS for all routes
+// This allows the frontend to communicate with the backend without CORS issues
+const cors = require('cors');
+app.use(cors());
+
 // Initialize Express app
 const app = express();
 // Define the port for the server to listen on
