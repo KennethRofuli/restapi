@@ -1,204 +1,114 @@
-'use strict';
+// api.js
 
+// Load environment variables
 require('dotenv').config();
 
-// ############################################# //
-// ##### Server Setup for Users Management API ##### //
-// ############################################# //
-
-// Importing packages
+// Import dependencies
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
+const cors = require('cors');
 
-// Enable CORS for all routes
-// This allows the frontend to communicate with the backend without CORS issues
-app.use(cors());
-
-// Initialize Express app
+// Initialize Express first — must come before using app
 const app = express();
-// Define the port for the server to listen on
-const port = process.env.PORT || 3000; // You can change this port
 
-// Middleware setup
-app.use(cors());
+// Middleware
 app.use(express.json());
+app.use(cors());
 
-// MongoDB connection string
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(port, () => {
-        console.log('Users API Server is running on port ' + port);
-    });
-})
-.catch((error) => {
-    console.error('Error connecting to MongoDB:', error);
+// MongoDB connection
+const mongoURI = process.env.MONGO_URI || "your-mongodb-atlas-connection-string";
+mongoose.connect(mongoURI)
+  .then(() => console.log("✅ Connected to MongoDB Atlas"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
+
+// Define Schema and Model
+const userSchema = new mongoose.Schema({
+  id: { type: Number, unique: true, required: true },
+  email: { type: String, required: true },
+  username: { type: String }
 });
 
-// ############################################# //
-// ##### Users Model Setup ##### //
-// ############################################# //
-const Schema = mongoose.Schema;
+const User = mongoose.model("User", userSchema);
 
-// Define the schema for the Users model
-const usersSchema = new Schema({
-    id: { type: Number, required: true, unique: true },
-    email: { type: String, required: true },
-    username: { type: String, required: true }
+// Routes
+
+// Get all users
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching users" });
+  }
 });
 
-// Create the Mongoose model
-const Users = mongoose.model('Users', usersSchema);
+// Get user by id
+app.get("/api/users/user/:id", async (req, res) => {
+  try {
+    const user = await User.findOne({ id: req.params.id });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching user" });
+  }
+});
 
-// ############################################# //
-// ##### Users API Routes Setup ##### //
-// ############################################# //
-const router = express.Router();
-
-// Mount the router to the '/api/users' endpoint
-app.use('/api/users', router);
-
-// Route to get all users
-router.route("/")
-    .get((req, res) => {
-        Users.find()
-            .then((users) => res.json(users))
-            .catch((err) => res.status(400).json({ error: "Error: " + err.message }));
-    })
-
-// Route to get a random user
-router.route("/random")
-    .get((req, res) => {
-        Users.countDocuments()
-            .then((count) => {
-                if (count === 0) {
-                    return res.status(404).json({ error: "No users found" });
-                }
-
-                const random = Math.floor(Math.random() * count);
-
-                Users.findOne().skip(random)
-                    .then((randomUser) => {
-                        res.json(randomUser);
-                    })
-                    .catch((err) => res.status(400).json({ error: "Error fetching random user: " + err.message }));
-            })
-            .catch((err) => res.status(400).json({ error: "Error counting users: " + err.message }));
-    });
-// Route to get a specific user by id
-router.route("/:id")
-    .get((req, res) => {
-        const userId = parseInt(req.params.id);
-        if (isNaN(userId)) {
-            return res.status(400).json({ error: "Invalid id, must be a number" });
-        }
-
-        Users.findOne({ id: userId })
-            .then((user) => {
-                if (!user) {
-                    return res.status(404).json({ error: "User not found" });
-                }
-                res.json(user);
-            })
-            .catch((err) => res.status(400).json({ error: "Error: " + err.message }));
-    });
-
-// Route to add a new user
-// Route to get a specific user by id
-router.route("/:id")
-    .get((req, res) => {
-        const userId = parseInt(req.params.id);
-        if (isNaN(userId)) {
-            return res.status(400).json({ error: "Invalid id, must be a number" });
-        }
-
-        Users.findOne({ id: userId })
-            .then((user) => {
-                if (!user) {
-                    return res.status(404).json({ error: "User not found" });
-                }
-                res.json(user);
-            })
-            .catch((err) => res.status(400).json({ error: "Error: " + err.message }));
-    });
-
-// Route to add a new user
-router.route("/add").post(async (req, res) => {
+// Create new user
+app.post("/api/users/newuser", async (req, res) => {
+  try {
     const { id, email, username } = req.body;
-
-    if (isNaN(id)) {
-        return res.status(400).json({ error: "id must be a valid number" });
-    }
-
-    try {
-        // Check if ID already exists
-        const existingUser = await Users.findOne({ id });
-
-        if (existingUser) {
-            return res.status(409).json({ error: "A user with this ID already exists" });
-        }
-
-        const newUser = new Users({ id, email, username });
-        await newUser.save();
-
-        res.json("User added!");
-    } catch (err) {
-        res.status(500).json({ error: "Server error: " + err.message });
-    }
+    const newUser = new User({ id, email, username });
+    await newUser.save();
+    res.status(201).json({ message: "User created successfully", user: newUser });
+  } catch (err) {
+    res.status(400).json({ error: "Error creating user", details: err.message });
+  }
 });
 
-// Route to update an existing user
-router.route("/update/:id")
-    .put((req, res) => {
-        const { email, username } = req.body;
-        const userId = parseInt(req.params.id);
-        
-        // Check if the id is a valid number
-        if (isNaN(userId)) {
-            return res.status(400).json({ error: "Invalid id, must be a number" });
-        }
+// Update user
+app.put("/api/users/modify/:id", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const updatedUser = await User.findOneAndUpdate(
+      { id: req.params.id },
+      { username },
+      { new: true }
+    );
+    if (!updatedUser) return res.status(404).json({ error: "User not found" });
+    res.json({ message: "User updated", user: updatedUser });
+  } catch (err) {
+    res.status(500).json({ error: "Error updating user" });
+  }
+});
 
-        Users.findOne({ id: userId })
-            .then((user) => {
-                if (!user) {
-                    return res.status(404).json({ error: "User not found" });
-                }
+// Delete user
+app.delete("/api/users/delete/:id", async (req, res) => {
+  try {
+    const deleted = await User.findOneAndDelete({ id: req.params.id });
+    if (!deleted) return res.status(404).json({ error: "User not found" });
+    res.json({ message: "User deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Error deleting user" });
+  }
+});
 
-                user.email = email;
-                user.username = username;
+// (Optional) Get random user
+app.get("/api/getrandomuser", async (req, res) => {
+  try {
+    const users = await User.find();
+    if (users.length === 0) return res.status(404).json({ error: "No users found" });
+    const randomUser = users[Math.floor(Math.random() * users.length)];
+    res.json(randomUser);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching random user" });
+  }
+});
 
-                user.save()
-                    .then(() => res.json("User updated!"))
-                    .catch((err) => res.status(400).json({ error: "Error: " + err.message }));
-            })
-            .catch((err) => res.status(400).json({ error: "Error: " + err.message }));
-    });
+// Default route
+app.get("/", (req, res) => {
+  res.send("UserList API is running 🚀");
+});
 
-// Route to delete a user by id
-router.route("/delete/:id")
-    .delete((req, res) => {
-        const userId = parseInt(req.params.id);
-
-        // Check if the id is a valid number
-        if (isNaN(userId)) {
-            return res.status(400).json({ error: "Invalid id, must be a number" });
-        }
-
-        Users.findOneAndDelete({ id: userId })
-            .then((user) => {
-                if (!user) {
-                    return res.status(404).json({ error: "User not found" });
-                }
-                res.json("User deleted.");
-            })
-            .catch((err) => res.status(400).json({ error: "Error: " + err.message }));
-    });
-
-    // Route to get one random user
-
-
-
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
