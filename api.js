@@ -13,7 +13,6 @@ const mongoose = require('mongoose');
 
 // Enable CORS for all routes
 // This allows the frontend to communicate with the backend without CORS issues
-const cors = require('cors');
 app.use(cors());
 
 // Initialize Express app
